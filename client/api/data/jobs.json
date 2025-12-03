@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Frontend Developer",
+    "company": "TechNova",
+    "location": "Remote",
+    "description": "Build performant React applications with TailwindCSS.",
+    "keywords": ["react", "tailwind", "javascript"],
+    "createdAt": "2025-01-01T10:00:00.000Z"
+  },
+  {
+    "title": "Backend Engineer",
+    "company": "DataWorks",
+    "location": "New York, NY",
+    "description": "Design APIs with Express and MongoDB.",
+    "keywords": ["express", "mongodb", "api"],
+    "createdAt": "2025-01-02T12:00:00.000Z"
+  },
+  {
+    "title": "Full Stack Developer",
+    "company": "CloudEdge",
+    "location": "San Francisco, CA",
+    "description": "MERN stack applications deployed on Vercel.",
+    "keywords": ["mern", "vercel", "prisma"],
+    "createdAt": "2025-01-03T09:00:00.000Z"
+  },
+  {
+    "title": "React Engineer",
+    "company": "UI Labs",
+    "location": "Austin, TX",
+    "description": "Reusable components and accessibility.",
+    "keywords": ["react", "a11y", "components"],
+    "createdAt": "2025-01-04T08:30:00.000Z"
+  }
+]
