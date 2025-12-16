@@ -1,3 +1,7 @@
 
 *.zip
 *.ZIP
+
+.env
+*.env
+.env.*
