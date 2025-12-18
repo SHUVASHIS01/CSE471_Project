@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// Use environment variable for API URL, fallback to localhost for development
+const API_URL = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api`
+  : 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -145,8 +148,9 @@ export const draftAPI = {
 
 export const interviewQuestionAPI = {
   getQuestions: (jobId) => api.get(`/jobs/${jobId}/questions`),
-  addQuestion: (jobId, question) => api.post(`/jobs/${jobId}/questions`, { question }),
-  updateQuestion: (jobId, questionId, question) => api.put(`/jobs/${jobId}/questions/${questionId}`, { question }),
+  addQuestion: (jobId, question, answer = '') => api.post(`/jobs/${jobId}/questions`, { question, answer }),
+  updateQuestion: (jobId, questionId, question, answer = null) => api.put(`/jobs/${jobId}/questions/${questionId}`, { question, answer }),
+  updateAnswer: (jobId, questionId, answer) => api.put(`/jobs/${jobId}/questions/${questionId}/answer`, { answer }),
   deleteQuestion: (jobId, questionId) => api.delete(`/jobs/${jobId}/questions/${questionId}`)
 };
 

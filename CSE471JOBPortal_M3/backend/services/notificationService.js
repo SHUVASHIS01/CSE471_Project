@@ -239,6 +239,34 @@ const createWarningNotification = async (userId, title, message, options = {}) =
 };
 
 /**
+ * Create feedback submitted notification (for recruiters)
+ * Notifies recruiter when an applicant submits feedback
+ * @param {string} recruiterId - Recruiter user ID
+ * @param {Object} jobDetails - Job details {title, company}
+ * @param {string} applicationId - Application ID
+ * @returns {Promise<Object>} Created notification
+ */
+const createFeedbackSubmittedNotification = async (recruiterId, jobDetails, applicationId) => {
+  return createNotification({
+    userId: recruiterId,
+    type: 'feedback_submitted',
+    title: '📝 Feedback Received',
+    message: `An applicant has submitted feedback for the position ${jobDetails.title} at ${jobDetails.company}. Click to view the feedback.`,
+    link: `/recruiter/feedbacks`,
+    relatedEntity: {
+      entityType: 'application',
+      entityId: applicationId
+    },
+    priority: 'medium',
+    metadata: {
+      jobTitle: jobDetails.title,
+      companyName: jobDetails.company,
+      applicationId: applicationId.toString()
+    }
+  });
+};
+
+/**
  * Get user notifications with pagination
  * @param {string} userId - User ID
  * @param {number} page - Page number (1-indexed)
@@ -364,6 +392,7 @@ module.exports = {
   createInfoNotification,
   createSuccessNotification,
   createWarningNotification,
+  createFeedbackSubmittedNotification,
   getUserNotifications,
   getUnreadCount,
   markAsRead,

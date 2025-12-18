@@ -1416,6 +1416,33 @@ router.post('/application/:id/applicant-feedback', verifyToken, authorizeRole('a
     // Mark applicant feedback as submitted
     application.applicantFeedbackSubmitted = true;
     
+    // Send notification to recruiter that feedback was received
+    const { createFeedbackSubmittedNotification } = require('../services/notificationService');
+    try {
+      const job = application.jobId;
+      const recruiterId = job.recruiterId.toString();
+      
+      console.log('📤 Sending feedback notification to recruiter:', {
+        recruiterId,
+        jobTitle: job.title,
+        company: job.company,
+        applicationId: application._id
+      });
+      
+      await createFeedbackSubmittedNotification(
+        recruiterId,
+        {
+          title: job.title,
+          company: job.company
+        },
+        application._id
+      );
+      console.log('✅ Feedback notification sent to recruiter');
+    } catch (notifError) {
+      console.error('❌ Error creating feedback notification for recruiter:', notifError.message);
+      console.error('Full error:', notifError);
+    }
+    
     // Unlock status if both feedbacks are submitted
     if (application.recruiterFeedbackSubmitted && application.applicantFeedbackSubmitted) {
       application.isStatusLocked = false;

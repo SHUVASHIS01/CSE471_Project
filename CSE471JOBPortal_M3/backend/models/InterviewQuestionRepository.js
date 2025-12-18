@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
 
+const questionAnswerSchema = new mongoose.Schema({
+  question: { type: String, trim: true, required: true },
+  answer: { type: String, trim: true, default: '' }
+}, { _id: false });
+
 const interviewQuestionRepositorySchema = new mongoose.Schema({
   jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', default: null },
-  questions: [{ type: String, trim: true }],
+  questions: [questionAnswerSchema],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, {
   timestamps: true
