@@ -54,7 +54,7 @@ router.post('/register', async (req, res) => {
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict', // Allow cross-origin cookies in production
       maxAge: TOKEN_EXPIRES_MS
     });
 
@@ -138,7 +138,7 @@ router.post('/login', async (req, res) => {
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict', // Allow cross-origin cookies in production
       maxAge: TOKEN_EXPIRES_MS
     });
 
@@ -170,7 +170,7 @@ router.post('/logout', (req, res) => {
   res.clearCookie(TOKEN_COOKIE_NAME, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict'
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict' // Allow cross-origin cookies in production
   });
   return res.json({ message: 'Logged out' });
 });

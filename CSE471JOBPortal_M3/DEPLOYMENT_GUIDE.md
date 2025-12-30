@@ -53,6 +53,13 @@ File Storage → Cloudinary (Free) or Backend storage
    - Replace `<password>` with your database user password
    - Example: `mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/jobportal?retryWrites=true&w=majority`
 
+6. **Database Creation**
+   - ✅ **No manual database creation needed!**
+   - MongoDB Atlas automatically creates the database when your application first writes data to it
+   - The database name in your connection string (e.g., `cse471_job` or `jobportal`) will be created automatically
+   - Example connection string: `mongodb+srv://cse471_job1:CSE471project%40@cluster0.6qttunk.mongodb.net/cse471_job?retryWrites=true&w=majority`
+   - Just use your connection string as-is in the `MONGO_URI` environment variable
+
 ---
 
 ## 🖥️ Step 2: Deploy Backend (Render - Free)
@@ -72,9 +79,18 @@ File Storage → Cloudinary (Free) or Backend storage
    ```
    Name: jobportal-backend
    Environment: Node
+   Root Directory: CSE471JOBPortal_M3
    Build Command: cd backend && npm install
    Start Command: cd backend && npm start
-   Root Directory: (leave empty or set to project root)
+   ```
+   
+   **Important**: Since your repository has a nested structure (`CSE471_Project/CSE471JOBPortal_M3/backend`), you need to set the **Root Directory** to `CSE471JOBPortal_M3` in Render settings. This tells Render where your project root is.
+   
+   **Alternative** (if Root Directory option doesn't work):
+   ```
+   Build Command: cd CSE471JOBPortal_M3/backend && npm install
+   Start Command: cd CSE471JOBPortal_M3/backend && npm start
+   Root Directory: (leave empty)
    ```
 
 4. **Environment Variables**
@@ -82,7 +98,7 @@ File Storage → Cloudinary (Free) or Backend storage
    ```
    PORT=10000
    NODE_ENV=production
-   MONGODB_URI=your-mongodb-atlas-connection-string
+   MONGO_URI=mongodb+srv://cse471_job1:CSE471project%40@cluster0.6qttunk.mongodb.net/cse471_job?retryWrites=true&w=majority
    JWT_SECRET=your-super-secret-jwt-key-min-32-chars
    FRONTEND_URL=https://your-frontend-domain.vercel.app
    EMAIL_HOST=smtp.gmail.com
@@ -95,6 +111,8 @@ File Storage → Cloudinary (Free) or Backend storage
    ENABLE_EMAIL_FALLBACK=true
    IPINFO_API_KEY=your-ipinfo-api-key (optional)
    ```
+   
+   **Note**: Use your actual MongoDB connection string. The database (`cse471_job`) will be automatically created when your app first connects and writes data.
 
 5. **Deploy**
    - Click "Create Web Service"
@@ -115,8 +133,9 @@ File Storage → Cloudinary (Free) or Backend storage
 
 3. **Configure Service**
    - Railway auto-detects Node.js
-   - Set Root Directory to `backend`
+   - Set Root Directory to `CSE471JOBPortal_M3/backend`
    - Set Start Command to `npm start`
+   - Build Command: `npm install` (runs automatically in root directory)
 
 4. **Environment Variables**
    - Add the same variables as Render
@@ -143,10 +162,12 @@ File Storage → Cloudinary (Free) or Backend storage
 3. **Configure Project**
    ```
    Framework Preset: Create React App
-   Root Directory: frontend
+   Root Directory: CSE471JOBPortal_M3/frontend
    Build Command: npm run build
    Output Directory: build
    ```
+   
+   **Important**: Since your repository has a nested structure, set the **Root Directory** to `CSE471JOBPortal_M3/frontend`.
 
 4. **Environment Variables**
    ```
@@ -175,10 +196,12 @@ File Storage → Cloudinary (Free) or Backend storage
 
 3. **Build Settings**
    ```
-   Base directory: frontend
+   Base directory: CSE471JOBPortal_M3/frontend
    Build command: npm run build
-   Publish directory: frontend/build
+   Publish directory: CSE471JOBPortal_M3/frontend/build
    ```
+   
+   **Important**: Since your repository has a nested structure, use `CSE471JOBPortal_M3/frontend` as the base directory.
 
 4. **Environment Variables**
    - Go to "Site settings" → "Environment variables"
@@ -278,7 +301,54 @@ In `frontend/src/api.js`, ensure it uses environment variable:
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 ```
 
-### 3. Handle File Serving
+### 3. Fix Cookie SameSite for Cross-Origin (CRITICAL for Production)
+
+**This is required when frontend and backend are on different domains (Vercel + Render)!**
+
+In `backend/routes/auth.js`, update the cookie settings for login and register:
+
+**Find this code (around lines 54-59 and 138-143):**
+```javascript
+res.cookie(TOKEN_COOKIE_NAME, token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'Strict',  // ❌ This blocks cross-origin cookies!
+  maxAge: TOKEN_EXPIRES_MS
+});
+```
+
+**Replace with:**
+```javascript
+res.cookie(TOKEN_COOKIE_NAME, token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',  // ✅ Allows cross-origin in production
+  maxAge: TOKEN_EXPIRES_MS
+});
+```
+
+**Also update the logout route (around line 170):**
+```javascript
+res.clearCookie(TOKEN_COOKIE_NAME, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict'
+});
+```
+
+**Why this is needed:**
+- `sameSite: 'Strict'` blocks cookies when frontend (Vercel) and backend (Render) are on different domains
+- `sameSite: 'None'` allows cross-origin cookies (required for production deployment)
+- `secure: true` is required when using `sameSite: 'None'` (already set for production)
+
+**After making this change:**
+1. Commit and push to GitHub
+2. Render will auto-deploy
+3. Clear browser cookies
+4. Logout and login again
+5. Check browser DevTools → Application → Cookies to verify `token` cookie exists
+
+### 4. Handle File Serving
 
 If using backend storage, update file serving in `backend/index.js`:
 
@@ -370,6 +440,10 @@ app.use('/uploads', express.static(uploadsDir));
 - Check environment variables are set correctly
 - Verify MongoDB connection string
 - Check build logs in Render/Railway dashboard
+- **"No such file or directory" error**: Your repository has nested structure (`CSE471_Project/CSE471JOBPortal_M3/backend`)
+  - **Solution for Render**: Set **Root Directory** to `CSE471JOBPortal_M3` in service settings
+  - **Alternative**: Use `cd CSE471JOBPortal_M3/backend && npm install` as build command
+  - **Solution for Railway**: Set **Root Directory** to `CSE471JOBPortal_M3/backend`
 
 ### CORS Errors
 - Verify `FRONTEND_URL` in backend matches actual frontend URL
@@ -383,13 +457,119 @@ app.use('/uploads', express.static(uploadsDir));
 
 ### Database Connection Issues
 - Verify MongoDB Atlas network access allows all IPs (0.0.0.0/0)
-- Check connection string has correct password
+- Check connection string has correct password (URL-encode special characters like `@` as `%40`)
 - Verify database user has proper permissions
+- **⚠️ IMPORTANT**: The backend uses `MONGO_URI` (not `MONGODB_URI`) - make sure your environment variable name matches!
+- **Note**: The database will be automatically created on first use - you don't need to create it manually in Atlas
+- If the database doesn't appear in Atlas, wait until your app writes data to it
 
 ### Email Not Sending
 - For Gmail, use App Password (not regular password)
 - Check email service environment variables
 - Verify SMTP settings
+
+### No Jobs Showing After Login
+
+If you can login but don't see any jobs, check the following:
+
+#### 1. **Database is Empty (Most Common)**
+   - **Problem**: No jobs have been created in the database yet
+   - **Solution**: 
+     - Login as a **Recruiter** account
+     - Create at least one job posting
+     - Jobs must have `isActive: true` to be visible to applicants
+   - **Quick Test**: Check if you can create a job as recruiter
+
+#### 2. **Wrong Environment Variable Name**
+   - **Problem**: Backend uses `MONGO_URI` but you set `MONGODB_URI`
+   - **Solution**: 
+     - Go to Render/Railway dashboard
+     - Check environment variables
+     - Make sure it's named `MONGO_URI` (not `MONGODB_URI`)
+     - Update if needed and redeploy
+
+#### 3. **Backend Not Connected to Database**
+   - **Problem**: Backend can't connect to MongoDB
+   - **Check**: 
+     - View backend logs in Render/Railway dashboard
+     - Look for "MongoDB connected successfully" message
+     - If you see connection errors, verify:
+       - `MONGO_URI` is set correctly
+       - MongoDB Atlas network access allows all IPs (0.0.0.0/0)
+       - Connection string password is URL-encoded (`@` → `%40`)
+
+#### 4. **API Connection Issues**
+   - **Problem**: Frontend can't reach backend API
+   - **Check**:
+     - Open browser Developer Tools (F12) → Network tab
+     - Try to load jobs and check for failed requests
+     - Look for CORS errors or 404/500 errors
+   - **Solution**:
+     - Verify `REACT_APP_API_URL` in Vercel/Netlify matches your backend URL
+     - Check backend CORS includes your frontend URL
+     - Ensure `FRONTEND_URL` in backend matches your Vercel/Netlify URL
+
+#### 5. **Authentication Issues (401 Unauthorized Errors)**
+   - **Problem**: JWT token not being sent or invalid - Most common in production!
+   - **Root Cause**: Cookie `sameSite: 'Strict'` blocks cookies in cross-origin requests (Vercel ↔ Render)
+   - **Check**:
+     - Open browser Developer Tools → Application → Cookies
+     - Verify `token` cookie exists after login
+     - Check Network tab - requests show 401 status
+   - **Solution** (CRITICAL FIX):
+     - Update `backend/routes/auth.js` to use `sameSite: 'None'` for production
+     - See "🔧 Step 5: Update Code for Production" section below for the exact code change
+     - After fix: Clear cookies, logout, and login again
+     - Verify `JWT_SECRET` is set in backend (at least 32 characters)
+
+#### 6. **Backend Service Spun Down (Render Free Tier)**
+   - **Problem**: Render free tier spins down after 15 min inactivity
+   - **Check**: First request after inactivity takes 30-60 seconds
+   - **Solution**: 
+     - Wait for backend to wake up (first request is slow)
+     - Consider using Railway or upgrading Render plan
+
+#### 7. **Jobs Exist But Are Inactive**
+   - **Problem**: Jobs exist but have `isActive: false`
+   - **Solution**: 
+     - Only jobs with `isActive: true` are shown to applicants
+     - Check if jobs were closed or deactivated
+     - Create new active jobs
+
+#### 8. **User Role Issues**
+   - **Problem**: Wrong dashboard for user role
+   - **Check**:
+     - Applicants see jobs via `/jobs/all` endpoint
+     - Recruiters see jobs via `/jobs/recruiter/jobs` endpoint
+   - **Solution**: Make sure you're logged in with the correct role
+
+#### Quick Diagnostic Steps:
+1. **Check Backend Logs** (Render/Railway dashboard):
+   ```
+   ✅ Look for: "MongoDB connected successfully"
+   ✅ Look for: "Server listening on port XXXX"
+   ❌ If you see errors, fix them first
+   ```
+
+2. **Test Backend Directly**:
+   - Open: `https://your-backend.onrender.com/`
+   - Should see: "API is running"
+   - Test API: `https://your-backend.onrender.com/api/jobs/all` (requires auth)
+
+3. **Check Frontend Console** (Browser F12):
+   - Look for API errors
+   - Check Network tab for failed requests
+   - Verify API URL is correct
+
+4. **Verify Environment Variables**:
+   - **Backend**: `MONGO_URI`, `JWT_SECRET`, `FRONTEND_URL`
+   - **Frontend**: `REACT_APP_API_URL`
+
+5. **Create Test Data**:
+   - Login as recruiter
+   - Create a test job
+   - Login as applicant
+   - Jobs should now appear
 
 ---
 
@@ -398,6 +578,7 @@ app.use('/uploads', express.static(uploadsDir));
 ### Render (Backend)
 ```bash
 # Connect GitHub repo in Render dashboard
+# Set Root Directory: CSE471JOBPortal_M3
 # Set build: cd backend && npm install
 # Set start: cd backend && npm start
 # Add environment variables
@@ -409,10 +590,11 @@ app.use('/uploads', express.static(uploadsDir));
 npm i -g vercel
 
 # Deploy
-cd frontend
+cd CSE471JOBPortal_M3/frontend
 vercel
 
 # Follow prompts
+# Or set Root Directory in Vercel dashboard: CSE471JOBPortal_M3/frontend
 ```
 
 ### Railway (Backend)
