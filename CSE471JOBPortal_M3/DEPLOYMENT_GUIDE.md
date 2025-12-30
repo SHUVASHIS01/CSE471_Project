@@ -100,7 +100,7 @@ File Storage → Cloudinary (Free) or Backend storage
    NODE_ENV=production
    MONGO_URI=mongodb+srv://cse471_job1:CSE471project%40@cluster0.6qttunk.mongodb.net/cse471_job?retryWrites=true&w=majority
    JWT_SECRET=your-super-secret-jwt-key-min-32-chars
-   FRONTEND_URL=https://your-frontend-domain.vercel.app
+   FRONTEND_URL=https://jobportal-orpin-ten.vercel.app
    EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
    EMAIL_SECURE=false
@@ -171,8 +171,13 @@ File Storage → Cloudinary (Free) or Backend storage
 
 4. **Environment Variables**
    ```
-   REACT_APP_API_URL=https://your-backend-url.onrender.com
+   REACT_APP_API_URL=https://jobportal-backend-j2r8.onrender.com
    ```
+   
+   **Important**: 
+   - Use your actual backend URL (no trailing slash, no `/api` suffix)
+   - The code automatically appends `/api` to the base URL
+   - Example: If backend is `https://jobportal-backend-j2r8.onrender.com`, set exactly that
 
 5. **Deploy**
    - Click "Deploy"
