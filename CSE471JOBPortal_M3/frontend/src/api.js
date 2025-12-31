@@ -3,7 +3,7 @@ import axios from 'axios';
 // Use environment variable for API URL, fallback to localhost for development
 const API_URL = process.env.REACT_APP_API_URL 
   ? `${process.env.REACT_APP_API_URL}/api`
-  : 'http://localhost:5000/api';
+  : 'https://jobportal-backend-j2r8.onrender.com/api';
 
 
 const api = axios.create({

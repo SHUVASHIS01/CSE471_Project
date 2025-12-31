@@ -32,31 +32,22 @@ const allowedOrigins = [
   "http://127.0.0.1:3000",
   "http://localhost:3001",
   "http://127.0.0.1:3001",
-  "http://localhost:5000"
+  "http://localhost:5000",
+  "https://jobportal-orpin-ten.vercel.app/",
 ];
 
 // Add production frontend URL from environment variable if set
 if (process.env.FRONTEND_URL) {
-  // Remove trailing slash if present
-  const frontendUrl = process.env.FRONTEND_URL.replace(/\/$/, '');
-  allowedOrigins.push(frontendUrl);
+  allowedOrigins.push(process.env.FRONTEND_URL);
 }
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else if (process.env.NODE_ENV === 'development') {
-      // In development, allow any origin
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    process.env.FRONTEND_URL, // Add this
+    "https://jobportal-orpin-ten.vercel.app/", // Add your actual URL
+  ],
   credentials: true
 }));
 // Ensure uploads directory exists and serve uploaded files statically
