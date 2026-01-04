@@ -33,7 +33,7 @@ const allowedOrigins = [
   "http://localhost:3001",
   "http://127.0.0.1:3001",
   "http://localhost:5000",
-  "https://jobportal-orpin-ten.vercel.app/",
+  "https://jobportal-orpin-ten.vercel.app",
 ];
 
 // Add production frontend URL from environment variable if set
