@@ -51,12 +51,13 @@ router.post('/register', async (req, res) => {
 
     const token = createToken(user);
 
-    res.cookie(TOKEN_COOKIE_NAME, token, {
+    res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-      maxAge: TOKEN_EXPIRES_MS
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000
     });
+
 
     return res.status(201).json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
