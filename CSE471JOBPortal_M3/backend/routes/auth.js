@@ -138,10 +138,10 @@ router.post('/login', async (req, res) => {
     const token = createToken(user);
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      secure: true,          // Force true – both platforms use HTTPS
+      sameSite: 'None',      // REQUIRED for cross-origin
       maxAge: TOKEN_EXPIRES_MS
-    });
+});
 
     const userObj = { 
       id: user._id, 
