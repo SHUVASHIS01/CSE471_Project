@@ -27,19 +27,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 // CORS configuration - supports both development and production
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3001",
-  "http://localhost:5000",
-  "https://jobportal-orpin-ten.vercel.app",
-];
+app.use(cors({
+  origin: 'https://jobportal-orpin-ten.vercel.app',
+  credentials: true
+}));
 
-// Add production frontend URL from environment variable if set
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
 
 app.use(cors({
   origin: [
